@@ -1,4 +1,4 @@
-# bol-web-parts
+# SPFx Ticket Form
 
 ## Summary
 
@@ -8,7 +8,9 @@ Files attached to a form submission are uploaded to a document library in a name
 
 ## Note
 
-This is my first project working with SPFx, TypeScript and Sass. It was designed to replace the IT ticketing system of my current company.
+This is my first project working with SPFx, TypeScript and Sass. It was designed to replace the IT ticketing system of my current company with a modern SharePoint solution.
+
+API calls are handled in TicketForm.tsx and the endpoints are specific to the company's SharePoint site layout.
 
 ## Skills and Technologies
 React
