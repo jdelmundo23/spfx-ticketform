@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "bol-web-parts-client-side-solution",
+    "id": "e6508214-679f-4e9a-bbe2-ff27196b70f5",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "",
+      "websiteUrl": "",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "mpnId": "Undefined-1.18.2"
+    },
+    "metadata": {
+      "shortDescription": {
+        "default": "BOL-Web-Parts description"
+      },
+      "longDescription": {
+        "default": "BOL-Web-Parts description"
+      },
+      "screenshotPaths": [],
+      "videoUrl": "",
+      "categories": []
+    },
+    "features": [
+      {
+        "title": "bol-web-parts Feature",
+        "description": "The feature that activates elements of the bol-web-parts solution.",
+        "id": "7fb98116-5d30-4c8d-9a5d-67ae8d0a4ce9",
+        "version": "1.0.0.0"
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/bol-web-parts.sppkg"
+  }
+}
