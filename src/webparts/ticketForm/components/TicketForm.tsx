@@ -24,8 +24,9 @@ interface ticketProps {
   UserId: number;
   Department: string;
   Branch: string;
-  Restarted: boolean;
+  Restarted: boolean | undefined;
   HasAttachments: boolean;
+  Status: string;
 }
 
 interface facTicketProps {
@@ -94,7 +95,8 @@ const TicketForm: React.FC<ITicketFormProps> = (props) => {
     files: File[],
     department: string,
     branch: string,
-    restarted: boolean
+    restarted: boolean | undefined,
+    status: string
   ): Promise<void> => {
     const item: ticketProps = {
       Title: title,
@@ -104,7 +106,8 @@ const TicketForm: React.FC<ITicketFormProps> = (props) => {
       Department: department,
       Branch: branch,
       Restarted: restarted,
-      HasAttachments: files.length > 0 ? true : false
+      HasAttachments: files.length > 0 ? true : false,
+      Status: status
     };
 
     try {

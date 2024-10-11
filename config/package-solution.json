@@ -3,7 +3,7 @@
   "solution": {
     "name": "bol-web-parts-client-side-solution",
     "id": "e6508214-679f-4e9a-bbe2-ff27196b70f5",
-    "version": "1.0.0.0",
+    "version": "1.0.0.1",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
     "isDomainIsolated": false,
@@ -30,7 +30,7 @@
         "title": "bol-web-parts Feature",
         "description": "The feature that activates elements of the bol-web-parts solution.",
         "id": "7fb98116-5d30-4c8d-9a5d-67ae8d0a4ce9",
-        "version": "1.0.0.0"
+        "version": "1.0.0.1"
       }
     ]
   },
