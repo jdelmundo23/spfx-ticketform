@@ -19,7 +19,8 @@ interface ITProps {
     files: File[],
     department: string,
     branch: string,
-    isoalted: boolean
+    isoalted: boolean | undefined,
+    status: string
   ) => Promise<void>;
   getFieldChoices: (listName: string, fieldName: string) => Promise<string[]>;
   resetForm: () => void;
@@ -45,17 +46,27 @@ const IT: React.FC<ITProps> = ({
   const [files, setFiles] = useState<File[]>([]);
   const [department, setDepartment] = useState<string>("");
   const [branch, setBranch] = useState<string>("");
-  const [isolated, setIsolated] = useState<boolean | null>(null);
+  const [isolated, setIsolated] = useState<boolean | undefined>(undefined);
+  const [status, setStatus] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const invalid =
+  const invalid = !isSiteAdmin ?
     !title ||
     !description ||
     !urgency ||
     !department ||
     !branch ||
-    isolated === null ||
-    ticketUserId === 0;
+    isolated === undefined ||
+    ticketUserId === 0 
+    : 
+    !title ||
+    !description ||
+    !urgency ||
+    !department ||
+    !branch ||
+    isolated === undefined ||
+    ticketUserId === 0 ||
+    !status
 
   const formatDate = (date: Date): string => {
     const month = ("0" + (date.getMonth() + 1)).slice(-2);
@@ -73,11 +84,7 @@ const IT: React.FC<ITProps> = ({
         onSubmit={async (e) => {
           e.preventDefault();
           if (
-            title &&
-            description &&
-            urgency &&
-            department &&
-            isolated !== null
+            !invalid
           ) {
             try {
               setIsLoading(true);
@@ -89,7 +96,8 @@ const IT: React.FC<ITProps> = ({
                 files,
                 department,
                 branch,
-                isolated
+                isolated,
+                status
               );
             } catch (error) {
               console.error(error);
@@ -183,9 +191,9 @@ const IT: React.FC<ITProps> = ({
                 width: "10%",
                 height: "30px",
                 borderRadius: "20px",
-                ...(failedSubmit && isolated === null
+                ...(failedSubmit && isolated === undefined
                   ? { border: "1px solid red" }
-                  : !isolated && isolated !== null
+                  : !isolated && isolated !== undefined
                   ? { border: "1px solid green", color: 'green' }
                   : { border: "1px solid grey" }),
               }}
@@ -208,9 +216,9 @@ const IT: React.FC<ITProps> = ({
                 width: "10%",
                 height: "30px",
                 borderRadius: "20px",
-                ...(failedSubmit && isolated === null
+                ...(failedSubmit && isolated === undefined
                   ? { border: "1px solid red" }
-                  : isolated && isolated !== null
+                  : isolated && isolated !== undefined
                   ? { border: "1px solid red", color: 'red' }
                   : {border: "1px solid grey"}),
               }}
@@ -255,6 +263,15 @@ const IT: React.FC<ITProps> = ({
             onChange={(e) => setDescription(e.target.value)}
           />
         </div>
+
+        {isSiteAdmin && <Choice
+          getChoices={getFieldChoices}
+          choice={status}
+          setChoice={setStatus}
+          invalid={failedSubmit && !status}
+          list={"IT"}
+          field={"Status"}
+        />}
 
         <Upload files={files} setFiles={setFiles} />
 
