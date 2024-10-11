@@ -26,7 +26,7 @@ interface ticketProps {
   Branch: string;
   Restarted: boolean | undefined;
   HasAttachments: boolean;
-  Status: string;
+  Status?: string;
 }
 
 interface facTicketProps {
@@ -110,6 +110,10 @@ const TicketForm: React.FC<ITicketFormProps> = (props) => {
       Status: status
     };
 
+    if (!status) {
+      delete item.Status;
+    }
+
     try {
       const response = await sp.web.lists.getByTitle("IT").items.add(item);
 
@@ -148,7 +152,7 @@ const TicketForm: React.FC<ITicketFormProps> = (props) => {
       Description: description,
       RequestorId: ticketUserId,
       Branch: branch,
-      HasAttachments: files.length > 0 ? true : false
+      HasAttachments: files.length > 0 ? true : false,
     };
     try {
       const test = await sp.web.lists.getByTitle("Facilities").fields();
