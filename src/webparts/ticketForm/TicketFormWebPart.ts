@@ -8,6 +8,7 @@ import {
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
 import { spfi, SPFx } from "@pnp/sp";
+import { graphfi, SPFx as graphSPFx} from "@pnp/graph";
 import * as strings from 'TicketFormWebPartStrings';
 import TicketForm from './components/TicketForm';
 import { ITicketFormProps } from './components/ITicketFormProps';
@@ -33,7 +34,8 @@ export default class TicketFormWebPart extends BaseClientSideWebPart<ITicketForm
         userId: this.context.pageContext.legacyPageContext.userId,
         currentSiteUrl: this.context.pageContext.web.absoluteUrl,
         spHttpClient: this.context.spHttpClient,
-        sp: spfi().using(SPFx(this.context))
+        sp: spfi().using(SPFx(this.context)),
+        graph: graphfi().using(graphSPFx(this.context))
       }
     );
 

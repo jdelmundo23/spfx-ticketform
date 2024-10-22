@@ -1,4 +1,5 @@
 import { SPHttpClient } from '@microsoft/sp-http'
+import { GraphFI } from '@pnp/graph';
 import {SPFI} from "@pnp/sp"
 
 export interface ITicketFormProps {
@@ -11,4 +12,5 @@ export interface ITicketFormProps {
   currentSiteUrl: string,
   spHttpClient: SPHttpClient
   sp: SPFI;
+  graph: GraphFI;
 }

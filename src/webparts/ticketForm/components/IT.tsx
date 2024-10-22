@@ -5,8 +5,7 @@ import Urgency from "./Urgency";
 import Upload from "./Upload";
 import Choice from "./Choice";
 import SearchUser from "./SearchUser";
-import { ISiteUserInfo } from "@pnp/sp/site-users/types";
-
+import { IMember } from "@pnp/graph/members";
 interface ITProps {
   hasTeamsContext: boolean;
   userDisplayName: string;
@@ -25,7 +24,8 @@ interface ITProps {
   getFieldChoices: (listName: string, fieldName: string) => Promise<string[]>;
   resetForm: () => void;
   isSiteAdmin: boolean;
-  getSiteUsers: () => Promise<ISiteUserInfo[]>;
+  getUsersFromGroup: (title: string) => Promise<IMember[]>;
+  getUserID: (upn: string | undefined) => Promise<number>;
 }
 
 const IT: React.FC<ITProps> = ({
@@ -36,7 +36,8 @@ const IT: React.FC<ITProps> = ({
   getFieldChoices,
   resetForm,
   isSiteAdmin,
-  getSiteUsers,
+  getUsersFromGroup,
+  getUserID
 }) => {
   const [title, setTitle] = useState<string>("");
   const [ticketUserId, setTicketUserId] = useState<number>(isSiteAdmin ? 0 : userId);
@@ -150,9 +151,10 @@ const IT: React.FC<ITProps> = ({
           <label htmlFor="user">User</label>
           {isSiteAdmin ? (
             <SearchUser
-              getSiteUsers={getSiteUsers}
+              getUsersFromGroup={getUsersFromGroup}
               setTicketUserId={setTicketUserId}
               invalid={failedSubmit && ticketUserId === 0}
+              getUserID={getUserID}
             />
           ) : (
             <p id="user">{userDisplayName}</p>

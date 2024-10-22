@@ -1,21 +1,29 @@
-import { ISiteUserInfo } from "@pnp/sp/site-users/types";
 import * as React from "react";
 import styles from "./TicketForm.module.scss";
+import { IMember } from "@pnp/graph/members";
+
+interface Member extends  IMember {
+  displayName?: string;
+  userPrincipalName?: string;
+  id?: string;
+}
 
 interface SearchUserProps {
-  getSiteUsers: () => Promise<ISiteUserInfo[]>;
+  getUsersFromGroup: (title: string) => Promise<IMember[]>;
   setTicketUserId: (id: number) => void;
   invalid: boolean;
+  getUserID: (upn: string | undefined) => Promise<number>;
 }
 
 const SearchUser: React.FC<SearchUserProps> = ({
-  getSiteUsers,
+  getUsersFromGroup,
   setTicketUserId,
-  invalid
+  invalid,
+  getUserID
 }) => {
-  const [siteUsers, setSiteUsers] = React.useState<ISiteUserInfo[]>();
-  const [filteredUsers, setFilteredUsers] = React.useState<ISiteUserInfo[]>();
-  const [search, setSearch] = React.useState<string>("");
+  const [siteUsers, setSiteUsers] = React.useState<Member[]>([]);
+  const [filteredUsers, setFilteredUsers] = React.useState<Member[]>([]);
+  const [search, setSearch] = React.useState<string | undefined>("");
   const [focused, setFocused] = React.useState<boolean>(false);
   const [validUser, setValidUser] = React.useState<boolean>(false);
 
@@ -23,7 +31,7 @@ const SearchUser: React.FC<SearchUserProps> = ({
 
   React.useEffect(() => {
     (async () => {
-      setSiteUsers(await getSiteUsers());
+      setSiteUsers(await getUsersFromGroup("All Users"));
     })().catch((error) => console.error("Unhandled promise rejection:", error));
   }, []);
 
@@ -32,10 +40,11 @@ const SearchUser: React.FC<SearchUserProps> = ({
     setFilteredUsers(
       siteUsers
         ?.filter((user) =>
-          user.Title.toLowerCase().includes(e.target.value.toLowerCase())
+          user?.displayName?.toLowerCase().includes(e.target.value.toLowerCase())
         )
         .slice(0, 4)
     );
+    console.log(filteredUsers)
     setValidUser(false);
     setTicketUserId(0);
   };
@@ -55,21 +64,25 @@ const SearchUser: React.FC<SearchUserProps> = ({
       <span>{validUser ? <p>✅</p> : <p>❌</p>}</span>
       {search && filteredUsers && focused && filteredUsers.length > 0 && (
         <ul>
-          {filteredUsers.map((user) => (
-            <li
-              key={user.UserPrincipalName}
-              onClick={() => {
-                setTicketUserId(user.Id);
-                inputRef.current?.blur();
-                setSearch(user.Title);
-                setFilteredUsers([]);
-                setValidUser(true);
-              }}
-              onMouseDown={(e) => e.preventDefault()}
-            >
-              {user.Title}
-            </li>
-          ))}
+          {filteredUsers.map(user => {
+            if (user.userPrincipalName !== undefined) {
+              return (
+                <li
+                  key={user.userPrincipalName}
+                  onClick={async () => {
+                    setTicketUserId(await getUserID(user.userPrincipalName));
+                    inputRef.current?.blur();
+                    setSearch(user.displayName);
+                    setFilteredUsers([]);
+                    setValidUser(true);
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                >
+                  {user.displayName}
+                </li>
+              )
+            }
+          })}
         </ul>
       )}
     </div>

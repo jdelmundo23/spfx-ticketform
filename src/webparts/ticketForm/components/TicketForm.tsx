@@ -7,15 +7,19 @@ import "@pnp/sp/items";
 import "@pnp/sp/attachments";
 import "@pnp/sp/fields";
 import "@pnp/sp/folders";
+import "@pnp/sp/sites";
 import "@pnp/sp/files";
 import "@pnp/sp/site-users/web";
+import "@pnp/sp/site-groups/web";
+import "@pnp/graph/groups";
+import "@pnp/graph/members";
 import Landing from "./Landing";
 import IT from "./IT";
 import Facilities from "./Facilities";
 import Submitted from "./Submitted";
 import styles from "./TicketForm.module.scss";
 import { PermissionKind } from "@pnp/sp/security";
-import { ISiteUserInfo } from "@pnp/sp/site-users/types";
+import { IMember } from "@pnp/graph/members";
 
 interface ticketProps {
   Title: string;
@@ -39,7 +43,7 @@ interface facTicketProps {
 }
 
 const TicketForm: React.FC<ITicketFormProps> = (props) => {
-  const { hasTeamsContext, userDisplayName, userId, sp } = props;
+  const { hasTeamsContext, userDisplayName, userId, sp, graph } = props;
 
   const [formCount, setFormCount] = useState<number>(0);
   const [formID, setFormID] = useState<number>(0);
@@ -55,6 +59,23 @@ const TicketForm: React.FC<ITicketFormProps> = (props) => {
   React.useEffect(() => {
     setIsFadeIn(true);
   });
+
+  const getUsersFromGroup = async (title: string) : Promise<IMember[]> => {
+    const data = await graph.groups();
+    const id = data.find(group => group.displayName === title)?.id;
+    
+    const members: IMember[] | undefined = id ? await graph.groups.getById(id).members() : undefined;
+    
+    return members ?? [];
+  }
+
+  const getUserID = async (upn: string | undefined) : Promise<number> => {
+    if (upn) {
+      const result = await sp.web.ensureUser(upn);
+      return result.Id;
+    }
+    return 0;
+  }
 
   React.useEffect(() => {
     const checkAdminStatus = async (): Promise<void> => {
@@ -80,12 +101,6 @@ const TicketForm: React.FC<ITicketFormProps> = (props) => {
       console.error("Unhandled promise rejection:", error)
     );
   }, []);
-
-  const getSiteUsers = async (): Promise<ISiteUserInfo[]> => {
-    const users = await sp.web.siteUsers();
-    const validUsers = users.filter((user) => user.UserPrincipalName);
-    return validUsers;
-  };
 
   const submitTicket = async (
     title: string,
@@ -118,8 +133,10 @@ const TicketForm: React.FC<ITicketFormProps> = (props) => {
       const response = await sp.web.lists.getByTitle("IT").items.add(item);
 
       if (files.length > 0) {
+        const web = await sp.web();
+
         try {
-          const url = `${process.env.SHAREPOINT_SITE_URL}/Helpdesk Documents/IT Help Desk/${response.ID}`;
+          const url = `${web.ServerRelativeUrl}/Helpdesk Documents/IT Help Desk/${response.ID}`;
           const folderResult = await sp.web.folders.addUsingPath(url);
           const folder = sp.web.getFolderByServerRelativePath(
             folderResult.ServerRelativeUrl
@@ -163,8 +180,10 @@ const TicketForm: React.FC<ITicketFormProps> = (props) => {
         .items.add(item);
 
       if (files.length > 0) {
+        const web = await sp.web();
+
         try {
-          const url = `${process.env.SHAREPOINT_SITE_URL}/Helpdesk Documents/Facilities/${response.ID}`;
+          const url = `${web.ServerRelativeUrl}/Helpdesk Documents/Facilities/${response.ID}`;
           const folderResult = await sp.web.folders.addUsingPath(url);
           const folder = sp.web.getFolderByServerRelativePath(
             folderResult.ServerRelativeUrl
@@ -216,7 +235,8 @@ const TicketForm: React.FC<ITicketFormProps> = (props) => {
           getFieldChoices={getFieldChoices}
           resetForm={() => setFormID(0)}
           isSiteAdmin={isSiteAdmin}
-          getSiteUsers={getSiteUsers}
+          getUsersFromGroup={getUsersFromGroup}
+          getUserID={getUserID}
         />
       );
       break;
@@ -231,7 +251,8 @@ const TicketForm: React.FC<ITicketFormProps> = (props) => {
           getFieldChoices={getFieldChoices}
           resetForm={() => setFormID(0)}
           isSiteAdmin={isSiteAdmin}
-          getSiteUsers={getSiteUsers}
+          getUsersFromGroup={getUsersFromGroup}
+          getUserID={getUserID}
         />
       );
       break;
