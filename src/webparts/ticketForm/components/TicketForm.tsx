@@ -20,6 +20,9 @@ import Submitted from "./Submitted";
 import styles from "./TicketForm.module.scss";
 import { PermissionKind } from "@pnp/sp/security";
 import { IMember } from "@pnp/graph/members";
+import { spPost, SPQueryable } from "@pnp/sp";
+import { AssignFrom } from "@pnp/core";
+import { body } from "@pnp/queryable";
 
 interface ticketProps {
   Title: string;
@@ -31,6 +34,7 @@ interface ticketProps {
   Restarted: boolean | undefined;
   HasAttachments: boolean;
   Status?: string;
+  AssignedToId?: number;
 }
 
 interface facTicketProps {
@@ -77,6 +81,12 @@ const TicketForm: React.FC<ITicketFormProps> = (props) => {
     return 0;
   }
 
+  const addResolutionComment = async (id: number, resolution: string) : Promise<void> => {
+    const spQueryable = SPQueryable(`https://bankofwalterboro.sharepoint.com/sites/BOLITHELPDESK/_api/web/lists/GetByTitle('IT')/items(${id})/Comments`).using(AssignFrom(sp.web));
+
+    await spPost(spQueryable, body({text: 'Resolution: ' + resolution}));
+  }
+
   React.useEffect(() => {
     const checkAdminStatus = async (): Promise<void> => {
       try {
@@ -111,7 +121,8 @@ const TicketForm: React.FC<ITicketFormProps> = (props) => {
     department: string,
     branch: string,
     restarted: boolean | undefined,
-    status: string
+    status: string,
+    resolution: string
   ): Promise<void> => {
     const item: ticketProps = {
       Title: title,
@@ -122,15 +133,25 @@ const TicketForm: React.FC<ITicketFormProps> = (props) => {
       Branch: branch,
       Restarted: restarted,
       HasAttachments: files.length > 0 ? true : false,
-      Status: status
+      Status: status,
+      AssignedToId: (await sp.web.currentUser()).Id
     };
 
     if (!status) {
       delete item.Status;
+      delete item.AssignedToId;
+    }
+
+    if (status === 'Not Started') {
+      delete item.AssignedToId;
     }
 
     try {
       const response = await sp.web.lists.getByTitle("IT").items.add(item);
+
+      if (resolution) {
+        await addResolutionComment(response.ID, resolution);
+      }
 
       if (files.length > 0) {
         const web = await sp.web();

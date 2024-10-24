@@ -19,7 +19,8 @@ interface ITProps {
     department: string,
     branch: string,
     isoalted: boolean | undefined,
-    status: string
+    status: string,
+    resolution: string
   ) => Promise<void>;
   getFieldChoices: (listName: string, fieldName: string) => Promise<string[]>;
   resetForm: () => void;
@@ -37,10 +38,12 @@ const IT: React.FC<ITProps> = ({
   resetForm,
   isSiteAdmin,
   getUsersFromGroup,
-  getUserID
+  getUserID,
 }) => {
   const [title, setTitle] = useState<string>("");
-  const [ticketUserId, setTicketUserId] = useState<number>(isSiteAdmin ? 0 : userId);
+  const [ticketUserId, setTicketUserId] = useState<number>(
+    isSiteAdmin ? 0 : userId
+  );
   const [urgency, setUrgency] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [failedSubmit, setFailedSubmit] = useState<boolean>(false);
@@ -49,25 +52,23 @@ const IT: React.FC<ITProps> = ({
   const [branch, setBranch] = useState<string>("");
   const [isolated, setIsolated] = useState<boolean | undefined>(undefined);
   const [status, setStatus] = useState<string>("");
+  const [resolution, setResolution] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  
+  const testInvalid = () : boolean => {
+    if (!title || !description || !urgency || !department || !branch || isolated === undefined || ticketUserId === 0) {
+      return true;
+    }
+    if (isSiteAdmin && !status) {
+      return true;
+    }
+    if (status === 'Resolved' && !resolution) {
+      return true;
+    }
+    return false;
+  }
 
-  const invalid = !isSiteAdmin ?
-    !title ||
-    !description ||
-    !urgency ||
-    !department ||
-    !branch ||
-    isolated === undefined ||
-    ticketUserId === 0 
-    : 
-    !title ||
-    !description ||
-    !urgency ||
-    !department ||
-    !branch ||
-    isolated === undefined ||
-    ticketUserId === 0 ||
-    !status
+  const invalid = testInvalid();
 
   const formatDate = (date: Date): string => {
     const month = ("0" + (date.getMonth() + 1)).slice(-2);
@@ -84,9 +85,7 @@ const IT: React.FC<ITProps> = ({
       <form
         onSubmit={async (e) => {
           e.preventDefault();
-          if (
-            !invalid
-          ) {
+          if (!invalid) {
             try {
               setIsLoading(true);
               await submitTicket(
@@ -98,7 +97,8 @@ const IT: React.FC<ITProps> = ({
                 department,
                 branch,
                 isolated,
-                status
+                status,
+                resolution
               );
             } catch (error) {
               console.error(error);
@@ -196,7 +196,7 @@ const IT: React.FC<ITProps> = ({
                 ...(failedSubmit && isolated === undefined
                   ? { border: "1px solid red" }
                   : !isolated && isolated !== undefined
-                  ? { border: "1px solid green", color: 'green' }
+                  ? { border: "1px solid green", color: "green" }
                   : { border: "1px solid grey" }),
               }}
             >
@@ -221,8 +221,8 @@ const IT: React.FC<ITProps> = ({
                 ...(failedSubmit && isolated === undefined
                   ? { border: "1px solid red" }
                   : isolated && isolated !== undefined
-                  ? { border: "1px solid red", color: 'red' }
-                  : {border: "1px solid grey"}),
+                  ? { border: "1px solid red", color: "red" }
+                  : { border: "1px solid grey" }),
               }}
             >
               No
@@ -266,14 +266,30 @@ const IT: React.FC<ITProps> = ({
           />
         </div>
 
-        {isSiteAdmin && <Choice
-          getChoices={getFieldChoices}
-          choice={status}
-          setChoice={setStatus}
-          invalid={failedSubmit && !status}
-          list={"IT"}
-          field={"Status"}
-        />}
+        {isSiteAdmin && (
+          <Choice
+            getChoices={getFieldChoices}
+            choice={status}
+            setChoice={setStatus}
+            invalid={failedSubmit && !status}
+            list={"IT"}
+            field={"Status"}
+          />
+        )}
+
+        {status === "Resolved" ? (
+          <div>
+            <label htmlFor="resolution">Resolution</label>
+            <textarea
+              style={failedSubmit && !resolution ? { borderColor: "red" } : {}}
+              id="resolution"
+              value={resolution}
+              onChange={(e) => setResolution(e.target.value)}
+            />
+          </div>
+        ) : (
+          ""
+        )}
 
         <Upload files={files} setFiles={setFiles} />
 
