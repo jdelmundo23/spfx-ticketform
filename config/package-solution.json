@@ -3,7 +3,7 @@
   "solution": {
     "name": "bol-web-parts-client-side-solution",
     "id": "e6508214-679f-4e9a-bbe2-ff27196b70f5",
-    "version": "1.0.0.1",
+    "version": "1.0.0.2",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
     "isDomainIsolated": false,

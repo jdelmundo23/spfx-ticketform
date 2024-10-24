@@ -44,7 +44,6 @@ const SearchUser: React.FC<SearchUserProps> = ({
         )
         .slice(0, 4)
     );
-    console.log(filteredUsers)
     setValidUser(false);
     setTicketUserId(0);
   };
