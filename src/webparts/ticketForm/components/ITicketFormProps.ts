@@ -1,4 +1,5 @@
 import { SPHttpClient } from '@microsoft/sp-http'
+import { WebPartContext } from '@microsoft/sp-webpart-base';
 import { GraphFI } from '@pnp/graph';
 import {SPFI} from "@pnp/sp"
 
@@ -13,4 +14,5 @@ export interface ITicketFormProps {
   spHttpClient: SPHttpClient
   sp: SPFI;
   graph: GraphFI;
+  context: WebPartContext
 }

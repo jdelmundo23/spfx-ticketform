@@ -5,7 +5,6 @@ import Urgency from "./Urgency";
 import Upload from "./Upload";
 import Choice from "./Choice";
 import SearchUser from "./SearchUser";
-import { IMember } from "@pnp/graph/members";
 interface ITProps {
   hasTeamsContext: boolean;
   userDisplayName: string;
@@ -22,11 +21,8 @@ interface ITProps {
     status: string,
     resolution: string
   ) => Promise<void>;
-  getFieldChoices: (listName: string, fieldName: string) => Promise<string[]>;
   resetForm: () => void;
   isSiteAdmin: boolean;
-  getUsersFromGroup: (title: string) => Promise<IMember[]>;
-  getUserID: (upn: string | undefined) => Promise<number>;
 }
 
 const IT: React.FC<ITProps> = ({
@@ -34,11 +30,8 @@ const IT: React.FC<ITProps> = ({
   userDisplayName,
   userId,
   submitTicket,
-  getFieldChoices,
   resetForm,
   isSiteAdmin,
-  getUsersFromGroup,
-  getUserID,
 }) => {
   const [title, setTitle] = useState<string>("");
   const [ticketUserId, setTicketUserId] = useState<number>(
@@ -151,10 +144,8 @@ const IT: React.FC<ITProps> = ({
           <label htmlFor="user">User</label>
           {isSiteAdmin ? (
             <SearchUser
-              getUsersFromGroup={getUsersFromGroup}
               setTicketUserId={setTicketUserId}
               invalid={failedSubmit && ticketUserId === 0}
-              getUserID={getUserID}
             />
           ) : (
             <p id="user">{userDisplayName}</p>
@@ -162,7 +153,6 @@ const IT: React.FC<ITProps> = ({
         </div>
 
         <Choice
-          getChoices={getFieldChoices}
           choice={branch}
           setChoice={setBranch}
           invalid={failedSubmit && !branch}
@@ -171,7 +161,6 @@ const IT: React.FC<ITProps> = ({
         />
 
         <Choice
-          getChoices={getFieldChoices}
           choice={department}
           setChoice={setDepartment}
           invalid={failedSubmit && !department}
@@ -268,7 +257,6 @@ const IT: React.FC<ITProps> = ({
 
         {isSiteAdmin && (
           <Choice
-            getChoices={getFieldChoices}
             choice={status}
             setChoice={setStatus}
             invalid={failedSubmit && !status}

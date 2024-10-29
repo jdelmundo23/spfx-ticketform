@@ -1,6 +1,8 @@
 import * as React from "react";
 import styles from "./TicketForm.module.scss";
 import { IMember } from "@pnp/graph/members";
+import APIContext from "../context/APIContext";
+import { getUsersFromGroup, getUserID } from "../api/data";
 
 interface Member extends  IMember {
   displayName?: string;
@@ -9,17 +11,13 @@ interface Member extends  IMember {
 }
 
 interface SearchUserProps {
-  getUsersFromGroup: (title: string) => Promise<IMember[]>;
   setTicketUserId: (id: number) => void;
   invalid: boolean;
-  getUserID: (upn: string | undefined) => Promise<number>;
 }
 
 const SearchUser: React.FC<SearchUserProps> = ({
-  getUsersFromGroup,
   setTicketUserId,
   invalid,
-  getUserID
 }) => {
   const [siteUsers, setSiteUsers] = React.useState<Member[]>([]);
   const [filteredUsers, setFilteredUsers] = React.useState<Member[]>([]);
@@ -29,9 +27,11 @@ const SearchUser: React.FC<SearchUserProps> = ({
 
   const inputRef = React.useRef<HTMLInputElement>(null);
 
+  const api = React.useContext(APIContext)
+
   React.useEffect(() => {
     (async () => {
-      setSiteUsers(await getUsersFromGroup("All Users"));
+      setSiteUsers(await getUsersFromGroup("All Users", api?.graph));
     })().catch((error) => console.error("Unhandled promise rejection:", error));
   }, []);
 
@@ -69,7 +69,7 @@ const SearchUser: React.FC<SearchUserProps> = ({
                 <li
                   key={user.userPrincipalName}
                   onClick={async () => {
-                    setTicketUserId(await getUserID(user.userPrincipalName));
+                    setTicketUserId(await getUserID(user.userPrincipalName, api?.sp));
                     inputRef.current?.blur();
                     setSearch(user.displayName);
                     setFilteredUsers([]);

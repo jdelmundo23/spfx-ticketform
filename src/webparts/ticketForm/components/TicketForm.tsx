@@ -18,11 +18,11 @@ import IT from "./IT";
 import Facilities from "./Facilities";
 import Submitted from "./Submitted";
 import styles from "./TicketForm.module.scss";
-import { PermissionKind } from "@pnp/sp/security";
-import { IMember } from "@pnp/graph/members";
 import { spPost, SPQueryable } from "@pnp/sp";
 import { AssignFrom } from "@pnp/core";
 import { body } from "@pnp/queryable";
+import APIContext, { createAPIContext } from "../context/APIContext";
+import { checkAdminStatus } from "../api/data";
 
 interface ticketProps {
   Title: string;
@@ -47,7 +47,7 @@ interface facTicketProps {
 }
 
 const TicketForm: React.FC<ITicketFormProps> = (props) => {
-  const { hasTeamsContext, userDisplayName, userId, sp, graph } = props;
+  const { hasTeamsContext, userDisplayName, userId, sp, context } = props;
 
   const [formCount, setFormCount] = useState<number>(0);
   const [formID, setFormID] = useState<number>(0);
@@ -56,60 +56,24 @@ const TicketForm: React.FC<ITicketFormProps> = (props) => {
 
   const page = React.useRef<HTMLDivElement>(null);
 
-  const scrollToTop = (): void => {
-    page.current?.scrollIntoView({ behavior: "smooth" });
+
+  const addResolutionComment = async (
+    id: number,
+    resolution: string
+  ): Promise<void> => {
+    const spQueryable = SPQueryable(
+      `${context.pageContext.site.absoluteUrl}/_api/web/lists/GetByTitle('IT')/items(${id})/Comments`
+    ).using(AssignFrom(sp.web));
+
+    await spPost(spQueryable, body({ text: "Resolution: " + resolution }));
   };
 
   React.useEffect(() => {
+    checkAdminStatus(sp)
+      .then((data) => setIsSiteAdmin(data))
+      .catch((error) => console.error("Unhandled promise rejection:", error));
+
     setIsFadeIn(true);
-  });
-
-  const getUsersFromGroup = async (title: string) : Promise<IMember[]> => {
-    const data = await graph.groups();
-    const id = data.find(group => group.displayName === title)?.id;
-    
-    const members: IMember[] | undefined = id ? await graph.groups.getById(id).members() : undefined;
-    
-    return members ?? [];
-  }
-
-  const getUserID = async (upn: string | undefined) : Promise<number> => {
-    if (upn) {
-      const result = await sp.web.ensureUser(upn);
-      return result.Id;
-    }
-    return 0;
-  }
-
-  const addResolutionComment = async (id: number, resolution: string) : Promise<void> => {
-    const spQueryable = SPQueryable(`https://bankofwalterboro.sharepoint.com/sites/BOLITHELPDESK/_api/web/lists/GetByTitle('IT')/items(${id})/Comments`).using(AssignFrom(sp.web));
-
-    await spPost(spQueryable, body({text: 'Resolution: ' + resolution}));
-  }
-
-  React.useEffect(() => {
-    const checkAdminStatus = async (): Promise<void> => {
-      try {
-        const web = sp.web;
-
-        const permissions = await web.getCurrentUserEffectivePermissions();
-
-        if (
-          web.hasPermissions(permissions, PermissionKind.ManageWeb) &&
-          web.hasPermissions(permissions, PermissionKind.ManagePermissions) &&
-          web.hasPermissions(permissions, PermissionKind.CreateGroups)
-        ) {
-          setIsSiteAdmin(true);
-        } else {
-          setIsSiteAdmin(false);
-        }
-      } catch (error) {
-        console.error("Error checking permissions:", error);
-      }
-    };
-    checkAdminStatus().catch((error) =>
-      console.error("Unhandled promise rejection:", error)
-    );
   }, []);
 
   const submitTicket = async (
@@ -134,7 +98,7 @@ const TicketForm: React.FC<ITicketFormProps> = (props) => {
       Restarted: restarted,
       HasAttachments: files.length > 0 ? true : false,
       Status: status,
-      AssignedToId: (await sp.web.currentUser()).Id
+      AssignedToId: (await sp.web.currentUser()).Id,
     };
 
     if (!status) {
@@ -142,7 +106,7 @@ const TicketForm: React.FC<ITicketFormProps> = (props) => {
       delete item.AssignedToId;
     }
 
-    if (status === 'Not Started') {
+    if (status === "Not Started") {
       delete item.AssignedToId;
     }
 
@@ -223,16 +187,6 @@ const TicketForm: React.FC<ITicketFormProps> = (props) => {
     }
   };
 
-  const getFieldChoices = async (
-    listName: string,
-    fieldName: string
-  ): Promise<string[]> => {
-    const list = sp.web.lists.getByTitle(listName);
-    const r = await list.fields();
-    const fields = r.filter((field) => field.Title === fieldName);
-    return fields[0].Choices ?? [];
-  };
-
   let formHTML: React.ReactElement = <></>;
 
   switch (formID) {
@@ -253,11 +207,8 @@ const TicketForm: React.FC<ITicketFormProps> = (props) => {
           userDisplayName={userDisplayName}
           userId={userId}
           submitTicket={submitTicket}
-          getFieldChoices={getFieldChoices}
           resetForm={() => setFormID(0)}
           isSiteAdmin={isSiteAdmin}
-          getUsersFromGroup={getUsersFromGroup}
-          getUserID={getUserID}
         />
       );
       break;
@@ -269,11 +220,8 @@ const TicketForm: React.FC<ITicketFormProps> = (props) => {
           userDisplayName={userDisplayName}
           userId={userId}
           submitFacTicket={submitFacTicket}
-          getFieldChoices={getFieldChoices}
           resetForm={() => setFormID(0)}
           isSiteAdmin={isSiteAdmin}
-          getUsersFromGroup={getUsersFromGroup}
-          getUserID={getUserID}
         />
       );
       break;
@@ -283,14 +231,16 @@ const TicketForm: React.FC<ITicketFormProps> = (props) => {
           hasTeamsContext={hasTeamsContext}
           setFormCount={() => setFormCount(formCount + 1)}
           resetForm={() => setFormID(0)}
-          scrollToTop={scrollToTop}
+          scrollToTop={() => page.current?.scrollIntoView({ behavior: "smooth" })}
         />
       );
   }
 
   return (
     <div ref={page} key={formID} className={styles.whitePage}>
-      <div className={isFadeIn ? styles.fadeIn : ""}>{formHTML}</div>
+      <APIContext.Provider value={createAPIContext(context)}>
+        <div className={isFadeIn ? styles.fadeIn : ""}>{formHTML}</div>
+      </APIContext.Provider>
     </div>
   );
 };

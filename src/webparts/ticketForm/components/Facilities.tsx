@@ -4,7 +4,6 @@ import { useState } from "react";
 import Urgency from "./Urgency";
 import Upload from "./Upload";
 import Choice from "./Choice";
-import { IMember } from "@pnp/graph/members";
 import SearchUser from "./SearchUser";
 
 interface FacilitiesProps {
@@ -19,23 +18,17 @@ interface FacilitiesProps {
     files: File[],
     branch: string
   ) => Promise<void>;
-  getFieldChoices: (listName: string, fieldName: string) => Promise<string[]>;
   resetForm: () => void;
   isSiteAdmin: boolean;
-  getUsersFromGroup: (title: string) => Promise<IMember[]>;
-  getUserID: (upn: string | undefined) => Promise<number>;
 }
 
 const Facilities: React.FC<FacilitiesProps> = ({
   hasTeamsContext,
   userDisplayName,
   userId,
-  getFieldChoices,
   submitFacTicket,
   resetForm,
   isSiteAdmin,
-  getUsersFromGroup,
-  getUserID
 }) => {
   const [title, setTitle] = useState<string>("");
   const [ticketUserId, setTicketUserId] = useState<number>(isSiteAdmin ? 0 : userId);
@@ -113,10 +106,8 @@ const Facilities: React.FC<FacilitiesProps> = ({
           <label htmlFor="user">User</label>
           {isSiteAdmin ? (
             <SearchUser
-              getUsersFromGroup={getUsersFromGroup}
               setTicketUserId={setTicketUserId}
               invalid={failedSubmit && ticketUserId === 0}
-              getUserID={getUserID}
             />
           ) : (
             <p id="user">{userDisplayName}</p>
@@ -124,7 +115,6 @@ const Facilities: React.FC<FacilitiesProps> = ({
         </div>
 
         <Choice
-          getChoices={getFieldChoices}
           choice={branch}
           setChoice={setBranch}
           invalid={failedSubmit && !branch}

@@ -1,8 +1,9 @@
 import * as React from "react";
 import styles from "./TicketForm.module.scss";
+import { getFieldChoices } from "../api/data";
+import APIContext from "../context/APIContext";
 
 interface ChoiceProps {
-    getChoices: (listName: string, fieldName : string) => Promise<string[]>;
     choice: string;
     setChoice: (choice: string) => void;
     invalid: boolean;
@@ -10,14 +11,15 @@ interface ChoiceProps {
     field: string;
 }
 
-const Choice: React.FC<ChoiceProps> = ({getChoices, choice, setChoice, invalid, list, field}) => {
+const Choice: React.FC<ChoiceProps> = ({ choice, setChoice, invalid, list, field}) => {
+    const api = React.useContext(APIContext)
     const [choices, setchoices] = React.useState<string[]>([]);
     const selectRef = React.useRef<HTMLSelectElement>(null);
 
     React.useEffect(() => {
         (async () => {
             try {
-              const choices = await getChoices(list, field);
+              const choices = await getFieldChoices(list, field, api?.sp);
               setchoices(choices);
             } catch (error) {
               console.error("Error fetching data:", error);

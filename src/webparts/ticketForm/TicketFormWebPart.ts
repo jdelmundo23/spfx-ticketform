@@ -35,7 +35,8 @@ export default class TicketFormWebPart extends BaseClientSideWebPart<ITicketForm
         currentSiteUrl: this.context.pageContext.web.absoluteUrl,
         spHttpClient: this.context.spHttpClient,
         sp: spfi().using(SPFx(this.context)),
-        graph: graphfi().using(graphSPFx(this.context))
+        graph: graphfi().using(graphSPFx(this.context)),
+        context: this.context
       }
     );
 
