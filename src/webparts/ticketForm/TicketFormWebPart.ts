@@ -26,14 +26,11 @@ export default class TicketFormWebPart extends BaseClientSideWebPart<ITicketForm
     const element: React.ReactElement<ITicketFormProps> = React.createElement(
       TicketForm,
       {
-        description: this.properties.description,
         isDarkTheme: this._isDarkTheme,
         environmentMessage: this._environmentMessage,
         hasTeamsContext: !!this.context.sdks.microsoftTeams,
         userDisplayName: this.context.pageContext.user.displayName,
         userId: this.context.pageContext.legacyPageContext.userId,
-        currentSiteUrl: this.context.pageContext.web.absoluteUrl,
-        spHttpClient: this.context.spHttpClient,
         sp: spfi().using(SPFx(this.context)),
         graph: graphfi().using(graphSPFx(this.context)),
         context: this.context
@@ -48,8 +45,6 @@ export default class TicketFormWebPart extends BaseClientSideWebPart<ITicketForm
       this._environmentMessage = message;
     });
   }
-
-
 
   private _getEnvironmentMessage(): Promise<string> {
     if (!!this.context.sdks.microsoftTeams) { // running in Teams, office.com or Outlook

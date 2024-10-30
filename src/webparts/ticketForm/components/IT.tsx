@@ -5,32 +5,22 @@ import Urgency from "./Urgency";
 import Upload from "./Upload";
 import Choice from "./Choice";
 import SearchUser from "./SearchUser";
+import { submitTicket } from "../api/submit";
+import APIContext from "../context/APIContext";
+
 interface ITProps {
-  hasTeamsContext: boolean;
   userDisplayName: string;
   userId: number;
-  submitTicket: (
-    title: string,
-    ticketUserId: number,
-    urgency: string,
-    description: string,
-    files: File[],
-    department: string,
-    branch: string,
-    isoalted: boolean | undefined,
-    status: string,
-    resolution: string
-  ) => Promise<void>;
   resetForm: () => void;
+  completeForm: () => void;
   isSiteAdmin: boolean;
 }
 
 const IT: React.FC<ITProps> = ({
-  hasTeamsContext,
   userDisplayName,
   userId,
-  submitTicket,
   resetForm,
+  completeForm,
   isSiteAdmin,
 }) => {
   const [title, setTitle] = useState<string>("");
@@ -47,6 +37,8 @@ const IT: React.FC<ITProps> = ({
   const [status, setStatus] = useState<string>("");
   const [resolution, setResolution] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const api = React.useContext(APIContext)
   
   const testInvalid = () : boolean => {
     if (!title || !description || !urgency || !department || !branch || isolated === undefined || ticketUserId === 0) {
@@ -73,7 +65,7 @@ const IT: React.FC<ITProps> = ({
 
   return (
     <section
-      className={`${styles.ticketForm} ${hasTeamsContext ? styles.teams : ""}`}
+      className={`${styles.ticketForm}`}
     >
       <form
         onSubmit={async (e) => {
@@ -91,8 +83,10 @@ const IT: React.FC<ITProps> = ({
                 branch,
                 isolated,
                 status,
-                resolution
+                resolution,
+                api?.sp
               );
+              completeForm();
             } catch (error) {
               console.error(error);
             } finally {

@@ -5,29 +5,22 @@ import Urgency from "./Urgency";
 import Upload from "./Upload";
 import Choice from "./Choice";
 import SearchUser from "./SearchUser";
+import { submitFacTicket } from "../api/submit";
+import APIContext from "../context/APIContext";
 
 interface FacilitiesProps {
-  hasTeamsContext: boolean;
   userDisplayName: string;
   userId: number;
-  submitFacTicket: (
-    title: string,
-    ticketUserId: number,
-    priority: string,
-    description: string,
-    files: File[],
-    branch: string
-  ) => Promise<void>;
   resetForm: () => void;
+  completeForm: () => void;
   isSiteAdmin: boolean;
 }
 
 const Facilities: React.FC<FacilitiesProps> = ({
-  hasTeamsContext,
   userDisplayName,
   userId,
-  submitFacTicket,
   resetForm,
+  completeForm,
   isSiteAdmin,
 }) => {
   const [title, setTitle] = useState<string>("");
@@ -38,6 +31,8 @@ const Facilities: React.FC<FacilitiesProps> = ({
   const [branch, setBranch] = useState<string>("");
   const [failedSubmit, setFailedSubmit] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const api = React.useContext(APIContext)
 
   const invalid = !title || !description || !priority || !branch || ticketUserId === 0;
 
@@ -51,7 +46,7 @@ const Facilities: React.FC<FacilitiesProps> = ({
 
   return (
     <section
-      className={`${styles.ticketForm} ${hasTeamsContext ? styles.teams : ""}`}
+      className={`${styles.ticketForm}`}
     >
       <form
         onSubmit={async (e) => {
@@ -65,8 +60,10 @@ const Facilities: React.FC<FacilitiesProps> = ({
                 priority,
                 description,
                 files,
-                branch
+                branch,
+                api?.sp
               );
+              completeForm();
             } catch (error) {
               console.error(error);
             } finally {
