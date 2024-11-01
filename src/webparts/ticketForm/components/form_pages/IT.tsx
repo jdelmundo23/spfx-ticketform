@@ -1,12 +1,15 @@
 import * as React from "react";
 import { useState } from "react";
-import styles from "./TicketForm.module.scss";
-import Urgency from "./Urgency";
-import Upload from "./Upload";
-import Choice from "./Choice";
-import SearchUser from "./SearchUser";
-import { submitTicket } from "../api/submit";
-import APIContext from "../context/APIContext";
+import styles from "../TicketForm.module.scss";
+import Urgency from "../form_components/Urgency";
+import Upload from "../form_components/Upload";
+import Choice from "../form_components/Choice";
+import SearchUser from "../form_components/SearchUser";
+import { submitTicket } from "../../api/submit";
+import APIContext from "../../context/APIContext";
+import TextArea from "../form_components/TextArea";
+import { formatDate } from "../../api/util";
+import YesNo from "../form_components/YesNo";
 
 interface ITProps {
   userDisplayName: string;
@@ -38,35 +41,33 @@ const IT: React.FC<ITProps> = ({
   const [resolution, setResolution] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const api = React.useContext(APIContext)
-  
-  const testInvalid = () : boolean => {
-    if (!title || !description || !urgency || !department || !branch || isolated === undefined || ticketUserId === 0) {
+  const api = React.useContext(APIContext);
+
+  const testInvalid = (): boolean => {
+    if (
+      !title ||
+      !description ||
+      !urgency ||
+      !department ||
+      !branch ||
+      isolated === undefined ||
+      ticketUserId === 0
+    ) {
       return true;
     }
     if (isSiteAdmin && !status) {
       return true;
     }
-    if (status === 'Resolved' && !resolution) {
+    if (status === "Resolved" && !resolution) {
       return true;
     }
     return false;
-  }
+  };
 
   const invalid = testInvalid();
 
-  const formatDate = (date: Date): string => {
-    const month = ("0" + (date.getMonth() + 1)).slice(-2);
-    const day = ("0" + date.getDate()).slice(-2);
-    const year = String(date.getFullYear()).slice(-2);
-
-    return `${month}/${day}/${year}`;
-  };
-
   return (
-    <section
-      className={`${styles.ticketForm}`}
-    >
+    <section className={`${styles.ticketForm}`}>
       <form
         onSubmit={async (e) => {
           e.preventDefault();
@@ -162,65 +163,13 @@ const IT: React.FC<ITProps> = ({
           field={"Department"}
         />
 
-        <div className={styles.radioDiv}>
-          <label htmlFor="isoalted">
-            Are others in your department experiencing the same issue?
-          </label>
-          <div
-            className={styles.radioFlex}
-            style={{ marginBottom: "0", justifyContent: "normal", gap: "10px" }}
-          >
-            <label
-              htmlFor={"yes"}
-              style={{
-                width: "10%",
-                height: "30px",
-                borderRadius: "20px",
-                ...(failedSubmit && isolated === undefined
-                  ? { border: "1px solid red" }
-                  : !isolated && isolated !== undefined
-                  ? { border: "1px solid green", color: "green" }
-                  : { border: "1px solid grey" }),
-              }}
-            >
-              Yes
-              <input
-                id={"yes"}
-                type="radio"
-                name="isolated"
-                value={"yes"}
-                onChange={() => {
-                  setIsolated(false);
-                }}
-              />
-            </label>
-
-            <label
-              htmlFor={"no"}
-              style={{
-                width: "10%",
-                height: "30px",
-                borderRadius: "20px",
-                ...(failedSubmit && isolated === undefined
-                  ? { border: "1px solid red" }
-                  : isolated && isolated !== undefined
-                  ? { border: "1px solid red", color: "red" }
-                  : { border: "1px solid grey" }),
-              }}
-            >
-              No
-              <input
-                id={"no"}
-                type="radio"
-                name="isolated"
-                value={"no"}
-                onChange={() => {
-                  setIsolated(true);
-                }}
-              />
-            </label>
-          </div>
-        </div>
+        <YesNo
+          field={"Are others in your department experiencing the same issue?"}
+          id={"isolated"}
+          value={isolated}
+          setValue={setIsolated}
+          failedSubmit={failedSubmit}
+        />
 
         <div>
           <label htmlFor="title">Title</label>
@@ -239,15 +188,13 @@ const IT: React.FC<ITProps> = ({
           invalid={failedSubmit && !urgency}
         />
 
-        <div>
-          <label htmlFor="description">Description/Error Messages</label>
-          <textarea
-            style={failedSubmit && !description ? { borderColor: "red" } : {}}
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </div>
+        <TextArea
+          id={"description"}
+          text={description}
+          setText={setDescription}
+          invalid={failedSubmit && !description}
+          field={"Description/Error Messages"}
+        />
 
         {isSiteAdmin && (
           <Choice
@@ -260,15 +207,13 @@ const IT: React.FC<ITProps> = ({
         )}
 
         {status === "Resolved" ? (
-          <div>
-            <label htmlFor="resolution">Resolution</label>
-            <textarea
-              style={failedSubmit && !resolution ? { borderColor: "red" } : {}}
-              id="resolution"
-              value={resolution}
-              onChange={(e) => setResolution(e.target.value)}
-            />
-          </div>
+          <TextArea
+            id={"resolution"}
+            text={resolution}
+            setText={setResolution}
+            invalid={failedSubmit && !resolution}
+            field={"Resolution"}
+          />
         ) : (
           ""
         )}
@@ -291,7 +236,7 @@ const IT: React.FC<ITProps> = ({
           >
             SUBMIT
           </button>
-          <p>{invalid && failedSubmit && "Please fill in all fields."}</p>
+          <p>{(invalid && failedSubmit) && "Please fill in all fields."}</p>
           {isLoading ? <span className={styles.spinner} /> : <></>}
         </div>
       </form>

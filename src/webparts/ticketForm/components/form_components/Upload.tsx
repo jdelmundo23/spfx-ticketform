@@ -1,5 +1,5 @@
 import * as React from "react";
-import styles from "./TicketForm.module.scss";
+import styles from "../TicketForm.module.scss";
 import { ChangeEvent, DragEvent, useState } from "react";
 
 interface UploadProps {

@@ -59,7 +59,7 @@ export const checkAdminStatus = async (
         web.hasPermissions(permissions, PermissionKind.ManagePermissions) &&
         web.hasPermissions(permissions, PermissionKind.CreateGroups)
       ) {
-        return false;
+        return true;
       } else {
         return false;
       }

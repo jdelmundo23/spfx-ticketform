@@ -2,6 +2,7 @@ import { AssignFrom } from "@pnp/core";
 import { body } from "@pnp/queryable";
 import { SPFI, spPost, SPQueryable } from "@pnp/sp";
 import { IContextInfo } from "@pnp/sp/context-info";
+import { replaceQuotes } from "./util";
 
 const addResolutionComment = async (
   id: number,
@@ -53,9 +54,9 @@ export const submitTicket = async (
 ): Promise<void> => {
   if (sp) {
     const item: ticketProps = {
-      Title: title,
+      Title: replaceQuotes(title),
       Urgency: urgency,
-      Description: description,
+      Description: replaceQuotes(description),
       UserId: ticketUserId,
       Department: department,
       Branch: branch,

@@ -1,12 +1,12 @@
 import * as React from "react";
-import styles from "./TicketForm.module.scss";
+import styles from "../TicketForm.module.scss";
 import { useState } from "react";
-import Urgency from "./Urgency";
-import Upload from "./Upload";
-import Choice from "./Choice";
-import SearchUser from "./SearchUser";
-import { submitFacTicket } from "../api/submit";
-import APIContext from "../context/APIContext";
+import Urgency from "../form_components/Urgency";
+import Upload from "../form_components/Upload";
+import Choice from "../form_components/Choice";
+import SearchUser from "../form_components/SearchUser";
+import { submitFacTicket } from "../../api/submit";
+import APIContext from "../../context/APIContext";
 
 interface FacilitiesProps {
   userDisplayName: string;

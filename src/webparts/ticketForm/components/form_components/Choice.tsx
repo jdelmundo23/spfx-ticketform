@@ -1,7 +1,7 @@
 import * as React from "react";
-import styles from "./TicketForm.module.scss";
-import { getFieldChoices } from "../api/data";
-import APIContext from "../context/APIContext";
+import styles from "../TicketForm.module.scss";
+import { getFieldChoices } from "../../api/data";
+import APIContext from "../../context/APIContext";
 
 interface ChoiceProps {
     choice: string;

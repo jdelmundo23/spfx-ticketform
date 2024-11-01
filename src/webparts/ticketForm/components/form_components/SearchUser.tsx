@@ -1,8 +1,8 @@
 import * as React from "react";
-import styles from "./TicketForm.module.scss";
+import styles from "../TicketForm.module.scss";
 import { IMember } from "@pnp/graph/members";
-import APIContext from "../context/APIContext";
-import { getUsersFromGroup, getUserID } from "../api/data";
+import APIContext from "../../context/APIContext";
+import { getUsersFromGroup, getUserID } from "../../api/data";
 
 interface Member extends  IMember {
   displayName?: string;
