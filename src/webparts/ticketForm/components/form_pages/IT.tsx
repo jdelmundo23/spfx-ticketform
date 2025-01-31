@@ -124,7 +124,7 @@ const IT: React.FC<ITProps> = ({
           <>
             <p className={styles.rebootMsg}>
               If you are having an application or hardware related issue, please
-              reboot the machine first.
+              <i> reboot</i> the machine first.
             </p>
             <br />
           </>
@@ -172,7 +172,7 @@ const IT: React.FC<ITProps> = ({
         />
 
         <div>
-          <label htmlFor="title">Title</label>
+          <label htmlFor="title">Issue Title</label>
           <input
             style={failedSubmit && !title ? { borderColor: "red" } : {}}
             id="title"
@@ -236,7 +236,7 @@ const IT: React.FC<ITProps> = ({
           >
             SUBMIT
           </button>
-          <p>{(invalid && failedSubmit) && "Please fill in all fields."}</p>
+          <p>{invalid && failedSubmit && "Please fill in all fields."}</p>
           {isLoading ? <span className={styles.spinner} /> : <></>}
         </div>
       </form>
