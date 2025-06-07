@@ -1,0 +1,18 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "ticket-form-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/ticketForm/TicketFormWebPart.js",
+          "manifest": "./src/webparts/ticketForm/TicketFormWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "TicketFormWebPartStrings": "lib/webparts/ticketForm/loc/{locale}.js"
+  }
+}
